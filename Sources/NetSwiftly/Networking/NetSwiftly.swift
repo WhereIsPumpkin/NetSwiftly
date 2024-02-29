@@ -10,7 +10,7 @@ public final class NetSwiftly {
     
     private init() {}
     
-    func fetchData<T: Decodable>(from endpoint: EndpointProvider, responseType: T.Type) async throws -> T {
+    public func fetchData<T: Decodable>(from endpoint: EndpointProvider, responseType: T.Type) async throws -> T {
         let request = try endpoint.asURLRequest()
         let (data, response) = try await URLSession.shared.data(for: request)
         
