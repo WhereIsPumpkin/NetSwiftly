@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct ApiError: Error {
+public struct ApiError: Error {
     var statusCode: Int?
     let errorCode: String
     var message: String
