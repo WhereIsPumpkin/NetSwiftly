@@ -12,6 +12,7 @@ public extension EndpointProvider {
     var token: String? { nil }
     var queryItems: [URLQueryItem]? { nil }
     var body: [String: Any]? { nil }
+    var mockFile: String? { nil }
     
     func asURLRequest() throws -> URLRequest {
         guard let url = URL(string: "\(scheme)://\(baseURL)\(path)") else {
