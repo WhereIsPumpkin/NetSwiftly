@@ -7,7 +7,7 @@
 
 import Foundation
 
-protocol EndpointProvider {
+public protocol EndpointProvider {
     var scheme: String { get }
     var baseURL: String { get }
     var path: String { get }
