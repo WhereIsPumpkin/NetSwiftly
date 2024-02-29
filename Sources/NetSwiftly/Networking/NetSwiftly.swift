@@ -6,7 +6,7 @@ import Foundation
 @available(iOS 13.0.0, *)
 public final class NetSwiftly {
     
-    static let shared = NetSwiftly()
+    public static let shared = NetSwiftly()
     
     private init() {}
     
