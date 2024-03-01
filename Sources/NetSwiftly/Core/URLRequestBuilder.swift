@@ -94,7 +94,7 @@ public class URLRequestBuilder {
 }
 
 /// Extensions to URLRequest to add various functionalities.
-extension URLRequest {
+public extension URLRequest {
     /// Sets the body of the request to a JSON representation of an Encodable object.
     /// - Parameters:
     ///   - body: The Encodable object to encode and set as the request body.
