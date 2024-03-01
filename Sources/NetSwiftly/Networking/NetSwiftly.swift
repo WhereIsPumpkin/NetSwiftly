@@ -20,7 +20,7 @@ public final class NetSwiftly {
         self.dateDecodingStrategy = strategy
     }
     
-    public func performRequest<T: ApiResponseType>(with urlRequest: URLRequest, decodeTo type: T.Type) async throws -> T {
+    public func performRequest<T: Decodable>(with urlRequest: URLRequest, decodeTo type: T.Type) async throws -> ApiResponse<T> {
         log("🌐 Making request to: \(urlRequest.url?.absoluteString ?? "Unknown URL")")
         
         do {
@@ -40,8 +40,43 @@ public final class NetSwiftly {
             decoder.dateDecodingStrategy = self.dateDecodingStrategy
             
             do {
-                let decodedData = try decoder.decode(T.self, from: data)
+                let decodedData = try decoder.decode(ApiResponse<T>.self, from: data)
                 log("✅ Successfully decoded \(T.self)")
+                return decodedData
+            } catch {
+                log("❌ Decoding error: \(error)")
+                throw NetSwiftlyError.decodingError(error)
+            }
+        } catch {
+            log("❌ Network error: \(error)")
+            throw NetSwiftlyError.networkError(error)
+        }
+    }
+    
+    public func performRequest(with urlRequest: URLRequest) async throws -> SimpleResponse {
+        log("🌐 Making request to: \(urlRequest.url?.absoluteString ?? "Unknown URL")")
+        
+        do {
+            let (data, response) = try await urlSession.data(for: urlRequest)
+            
+            guard let httpResponse = response as? HTTPURLResponse else {
+                throw NetSwiftlyError.unknownError
+            }
+            
+            log("🚦 HTTP Status Code: \(httpResponse.statusCode)")
+            guard 200...299 ~= httpResponse.statusCode else {
+                log("❌ Error: Bad Server Response (\(httpResponse.statusCode))")
+                throw NetSwiftlyError.badServerResponse(httpResponse.statusCode)
+            }
+            
+            log("✅ Request successful with status code \(httpResponse.statusCode)")
+            
+            let decoder = JSONDecoder()
+            decoder.dateDecodingStrategy = self.dateDecodingStrategy
+            
+            do {
+                let decodedData = try decoder.decode(SimpleResponse.self, from: data)
+                log("✅ Successfully decoded \(SimpleResponse.self)")
                 return decodedData
             } catch {
                 log("❌ Decoding error: \(error)")
