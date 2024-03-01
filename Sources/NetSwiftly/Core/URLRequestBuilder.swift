@@ -46,12 +46,9 @@ public enum ContentType: String {
     case urlencoded = "application/x-www-form-urlencoded"
 }
 
-/// A builder for creating URL requests with specified configurations.
 public class URLRequestBuilder {
     private let baseURL: URL
     
-    /// Initializes a new URLRequestBuilder with a base URL.
-    /// - Parameter baseURL: The base URL for the request.
     public init(baseURL: URL) {
         self.baseURL = baseURL
     }
