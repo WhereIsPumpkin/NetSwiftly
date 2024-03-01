@@ -12,3 +12,5 @@ public struct ApiResponse<T: Decodable>: ServerResponse {
     public let data: T?
     public let message: String?
 }
+
+public struct EmptyResponse: Decodable {}

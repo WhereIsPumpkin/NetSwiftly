@@ -20,37 +20,27 @@ public final class NetSwiftly {
         self.dateDecodingStrategy = strategy
     }
     
-    public func performRequest<T: Decodable>(with urlRequest: URLRequest, decodeTo type: T.Type) async throws -> ApiResponse<T> {
+    public func performRequest<T: Decodable>(with urlRequest: URLRequest, decodeTo type: T.Type = EmptyResponse.self as! T.Type) async throws -> ApiResponse<T> {
         log("🌐 Making request to: \(urlRequest.url?.absoluteString ?? "Unknown URL")")
         
-        do {
-            let (data, response) = try await urlSession.data(for: urlRequest)
-            
-            guard let httpResponse = response as? HTTPURLResponse else {
-                throw NetSwiftlyError.unknownError
-            }
-            
-            log("🚦 HTTP Status Code: \(httpResponse.statusCode)")
-            guard 200...299 ~= httpResponse.statusCode else {
-                log("❌ Error: Bad Server Response (\(httpResponse.statusCode))")
-                throw NetSwiftlyError.badServerResponse(httpResponse.statusCode)
-            }
-            
-            let decoder = JSONDecoder()
-            decoder.dateDecodingStrategy = self.dateDecodingStrategy
-            
-            do {
-                let decodedData = try decoder.decode(ApiResponse<T>.self, from: data)
-                log("✅ Successfully decoded \(T.self)")
-                return decodedData
-            } catch {
-                log("❌ Decoding error: \(error)")
-                throw NetSwiftlyError.decodingError(error)
-            }
-        } catch {
-            log("❌ Network error: \(error)")
-            throw NetSwiftlyError.networkError(error)
+        let (data, response) = try await urlSession.data(for: urlRequest)
+        
+        guard let httpResponse = response as? HTTPURLResponse else {
+            throw NetSwiftlyError.unknownError
         }
+        
+        log("🚦 HTTP Status Code: \(httpResponse.statusCode)")
+        guard 200...299 ~= httpResponse.statusCode else {
+            log("❌ Error: Bad Server Response (\(httpResponse.statusCode))")
+            throw NetSwiftlyError.badServerResponse(httpResponse.statusCode)
+        }
+        
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = self.dateDecodingStrategy
+        
+        let decodedData = try decoder.decode(ApiResponse<T>.self, from: data)
+        log("✅ Successfully decoded \(T.self)")
+        return decodedData
     }
 }
 
