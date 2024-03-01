@@ -7,7 +7,4 @@
 
 import Foundation
 
-protocol ServerResponse: Decodable {
-    var error: Bool { get }
-    var message: String? { get }
-}
+public protocol ApiResponseType: Decodable { }

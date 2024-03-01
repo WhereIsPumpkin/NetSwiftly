@@ -7,10 +7,13 @@
 
 import Foundation
 
-public struct ApiResponse<T: Decodable>: ServerResponse {
+public struct ApiResponse<T: Decodable>: ApiResponseType {
     public let error: Bool
     public let data: T?
     public let message: String?
 }
 
-public struct EmptyResponse: Decodable {}
+public struct SimpleResponse: ApiResponseType {
+    public let error: Bool
+    public let message: String?
+}
