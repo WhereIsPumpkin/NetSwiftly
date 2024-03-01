@@ -26,5 +26,22 @@ public final class NetSwiftly {
         }
     }
     
+    public func postData(from endpoint: EndpointProvider) async throws -> String {
+        let request = try endpoint.asURLRequest()
+        let (data, response) = try await URLSession.shared.data(for: request)
+        
+        guard let httpResponse = response as? HTTPURLResponse else {
+            throw URLError(.badServerResponse)
+        }
+        
+        let backendMessage = try JSONDecoder().decode(BackendMessage.self, from: data)
+        
+        if backendMessage.error {
+            throw BackendError.serverError(backendMessage.message)
+        }
+        
+        let result = backendMessage.message
+        return result
+    }
     
 }
