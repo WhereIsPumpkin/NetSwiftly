@@ -7,8 +7,8 @@
 
 import Foundation
 
-struct ApiResponse<T: Decodable>: Decodable {
-    let error: Bool
-    let message: String
-    let data: T?
+public struct ApiResponse<T: Decodable>: ServerResponse {
+    public let error: Bool
+    public let data: T?
+    public let message: String?
 }

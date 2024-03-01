@@ -13,7 +13,7 @@ public final class NetSwiftly {
     
     private init() {}
     
-    public func fetchData<T: Decodable>(from urlRequest: URLRequest, decodeTo type: T.Type) async throws -> T {
+    public func fetchData<T: Decodable>(from urlRequest: URLRequest, decodeTo type: T.Type) async throws -> ApiResponse<T> {
         if debugEnabled {
             print("🌐 Fetching data from: \(urlRequest.url?.absoluteString ?? "Unknown URL")")
         }
@@ -36,7 +36,7 @@ public final class NetSwiftly {
         decoder.dateDecodingStrategy = .iso8601
         
         do {
-            let decodedData = try decoder.decode(T.self, from: data)
+            let decodedData = try decoder.decode(ApiResponse<T>.self, from: data)
             if debugEnabled {
                 print("✅ Successfully decoded \(T.self)")
             }
