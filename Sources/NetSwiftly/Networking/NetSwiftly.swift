@@ -10,38 +10,24 @@ public final class NetSwiftly {
     
     private init() {}
     
-    public func fetchData<T: Decodable>(from endpoint: EndpointProvider, responseType: T.Type) async throws -> T {
-        let request = try endpoint.asURLRequest()
-        let (data, response) = try await URLSession.shared.data(for: request)
-        
-        guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
-            throw ApiError(errorCode: "HTTP_ERROR", message: "Non-200 HTTP response")
-        }
-        
+    func performNetworkRequest<T: Decodable>(for endpoint: EndpointProvider, expecting: T.Type) async throws -> ApiResponse<T> {
         do {
-            let decodedResponse = try JSONDecoder().decode(T.self, from: data)
-            return decodedResponse
+            let request = try endpoint.asURLRequest()
+            let (data, response) = try await URLSession.shared.data(for: request)
+            
+            guard let httpResponse = response as? HTTPURLResponse, 200...299 ~= httpResponse.statusCode else {
+                throw NetworkError.invalidResponse
+            }
+            
+            do {
+                let decodedResponse = try JSONDecoder().decode(ApiResponse<T>.self, from: data)
+                return decodedResponse
+            } catch {
+                throw NetworkError.decodingError
+            }
         } catch {
-            throw ApiError(errorCode: "DECODING_ERROR", message: "Failed to decode response")
+            throw NetworkError.customError("Failed to construct the request")
         }
-    }
-    
-    public func postData(from endpoint: EndpointProvider) async throws -> String {
-        let request = try endpoint.asURLRequest()
-        let (data, response) = try await URLSession.shared.data(for: request)
-        
-        guard let httpResponse = response as? HTTPURLResponse else {
-            throw URLError(.badServerResponse)
-        }
-        
-        let backendMessage = try JSONDecoder().decode(BackendMessage.self, from: data)
-        
-        if backendMessage.error {
-            throw BackendError.serverError(backendMessage.message)
-        }
-        
-        let result = backendMessage.message
-        return result
     }
     
 }
