@@ -7,8 +7,9 @@
 
 import Foundation
 
-public struct ApiError: Error {
-    public var statusCode: Int?
-    public let errorCode: String
-    public var message: String
+public enum NetSwiftlyError: Error {
+    case badServerResponse(Int)
+    case decodingError(Error)
+    case networkError(Error)
+    case unknownError
 }
