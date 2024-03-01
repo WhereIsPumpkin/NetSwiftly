@@ -7,6 +7,25 @@
 //  URL requests for various HTTP methods, handling content types, and extending URL requests
 //  with additional functionalities like setting JSON bodies, query items, and authorization tokens.
 //
+//  Usage Example:
+//  The URLRequestBuilder is designed to simplify the creation of URLRequest objects through a fluent API.
+//  Here's how you can use it in your projects:
+//
+//  // Creating a builder with a base URL
+//  let builder = URLRequestBuilder(baseURL: URL(string: "https://api.example.com")!)
+//
+//  // Making a GET request
+//  let getRequest = builder.get("/users/\(id)/profile")
+//
+//  // Making a POST request with a JSON body and custom header
+//  var postRequest = builder.post("/users")
+//  try postRequest.setJSONBody(profile)
+//  postRequest.setValue("1.2.1", forHTTPHeaderField: "X-API-Version")
+//
+//  // Initializing another builder for a different base URL
+//  let otherBuilder = URLRequestBuilder(baseURL: URL(string: "https://api.anotherexample.com")!)
+//  let otherRequest = otherBuilder.get("/some/path?param=blah")
+//
 //  Created by Saba Gogrichiani on 01.03.24.
 //
 
