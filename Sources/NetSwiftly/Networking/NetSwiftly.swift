@@ -10,24 +10,16 @@ public final class NetSwiftly {
     
     private init() {}
     
-    func performNetworkRequest<T: Decodable>(for endpoint: EndpointProvider, expecting: T.Type) async throws -> ApiResponse<T> {
-        do {
-            let request = try endpoint.asURLRequest()
-            let (data, response) = try await URLSession.shared.data(for: request)
-            
-            guard let httpResponse = response as? HTTPURLResponse, 200...299 ~= httpResponse.statusCode else {
-                throw NetworkError.invalidResponse
-            }
-            
-            do {
-                let decodedResponse = try JSONDecoder().decode(ApiResponse<T>.self, from: data)
-                return decodedResponse
-            } catch {
-                throw NetworkError.decodingError
-            }
-        } catch {
-            throw NetworkError.customError("Failed to construct the request")
+    public func fetchData<T: Decodable>(from urlRequest: URLRequest, decodeTo type: T.Type) async throws -> T {
+        let (data, response) = try await URLSession.shared.data(for: urlRequest)
+        
+        guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
+            throw URLError(.badServerResponse)
         }
+        
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .iso8601
+        return try decoder.decode(T.self, from: data)
     }
     
 }
