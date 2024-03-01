@@ -20,8 +20,8 @@ public final class NetSwiftly {
         self.dateDecodingStrategy = strategy
     }
     
-    public func fetchData<T: Decodable>(from urlRequest: URLRequest, decodeTo type: T.Type) async throws -> ApiResponse<T> {
-        log("🌐 Fetching data from: \(urlRequest.url?.absoluteString ?? "Unknown URL")")
+    public func performRequest<T: Decodable>(with urlRequest: URLRequest, decodeTo type: T.Type) async throws -> ApiResponse<T> {
+        log("🌐 Making request to: \(urlRequest.url?.absoluteString ?? "Unknown URL")")
         
         do {
             let (data, response) = try await urlSession.data(for: urlRequest)
@@ -31,7 +31,7 @@ public final class NetSwiftly {
             }
             
             log("🚦 HTTP Status Code: \(httpResponse.statusCode)")
-            guard httpResponse.statusCode == 200 else {
+            guard 200...299 ~= httpResponse.statusCode else {
                 log("❌ Error: Bad Server Response (\(httpResponse.statusCode))")
                 throw NetSwiftlyError.badServerResponse(httpResponse.statusCode)
             }
