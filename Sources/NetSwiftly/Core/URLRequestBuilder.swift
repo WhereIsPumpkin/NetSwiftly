@@ -53,36 +53,25 @@ public class URLRequestBuilder {
     // MARK: - Public Methods for Creating Requests
     
     /// Creates a GET request for the specified path.
-    /// - Parameter path: The endpoint path for the GET request.
-    /// - Returns: A configured URLRequest instance for a GET request.
+    /// - Parameter path: The endpoint path for the HTTP method request.
+    /// - Returns: A configured URLRequest instance for a  HTTP method request.
+    
     public func get(_ path: String) -> URLRequest {
         return buildRequest(path: path, method: .get)
     }
     
-    /// Creates a POST request for the specified path.
-    /// - Parameter path: The endpoint path for the POST request.
-    /// - Returns: A configured URLRequest instance for a POST request.
     public func post(_ path: String) -> URLRequest {
         return buildRequest(path: path, method: .post)
     }
     
-    /// Creates a PUT request for the specified path.
-    /// - Parameter path: The endpoint path for the PUT request.
-    /// - Returns: A configured URLRequest instance for a PUT request.
     public func put(_ path: String) -> URLRequest {
         return buildRequest(path: path, method: .put)
     }
     
-    /// Creates a PATCH request for the specified path.
-    /// - Parameter path: The endpoint path for the PATCH request.
-    /// - Returns: A configured URLRequest instance for a PATCH request.
     public func patch(_ path: String) -> URLRequest {
         return buildRequest(path: path, method: .patch)
     }
     
-    /// Creates a DELETE request for the specified path.
-    /// - Parameter path: The endpoint path for the DELETE request.
-    /// - Returns: A configured URLRequest instance for a DELETE request.
     public func delete(_ path: String) -> URLRequest {
         return buildRequest(path: path, method: .delete)
     }
