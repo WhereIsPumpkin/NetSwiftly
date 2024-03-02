@@ -24,25 +24,25 @@ public final class NetSwiftly {
         request: URLRequest,
         responseType: T.Type
     ) async throws -> T {
-        log("🚀 Starting request to \(request.url?.absoluteString ?? "unknown URL")", emoji: "🚀")
+        log("🚀 Starting request to \(request.url?.absoluteString ?? "unknown URL")")
         
         do {
             let (data, response) = try await URLSession.shared.data(for: request)
             
             if let httpResponse = response as? HTTPURLResponse {
-                log("📥 Received response with status code: \(httpResponse.statusCode)", emoji: "ℹ️")
+                log("📥 Received response with status code: \(httpResponse.statusCode)")
             }
             
             if let rawJSONString = String(data: data, encoding: .utf8) {
-                log("📄 Received JSON: \(rawJSONString)", emoji: "📄")
+                log("📄 Received JSON: \(rawJSONString)")
             }
             
             guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode >= 200 && httpResponse.statusCode < 300 else {
                 if let decodedError = try? JSONDecoder().decode(APIErrorResponse.self, from: data) {
-                    log("⚠️ Server error message: \(decodedError.message)", emoji: "⚠️")
+                    log("⚠️ Server error message: \(decodedError.message)")
                     throw NetworkError.serverMessage(decodedError.message)
                 } else {
-                    log("❌ Failed to decode server error message.", emoji: "❌")
+                    log("❌ Failed to decode server error message.")
                     throw NetworkError.requestFailed
                 }
             }
@@ -51,14 +51,14 @@ public final class NetSwiftly {
                 let decoder = JSONDecoder()
                 decoder.dateDecodingStrategy = dateDecodingStrategy
                 let decodedData = try decoder.decode(T.self, from: data)
-                log("✅ Successfully decoded response of type \(T.self)", emoji: "✅")
+                log("✅ Successfully decoded response of type \(T.self)")
                 return decodedData
             } catch {
-                log("🐛 Decoding error for request to \(request.url?.absoluteString ?? "unknown URL"): \(error)", emoji: "🐛")
+                log("🐛 Decoding error for request to \(request.url?.absoluteString ?? "unknown URL"): \(error)")
                 throw NetworkError.decodingError
             }
         } catch {
-            log("💥 Network request failed: \(error)", emoji: "💥")
+            log("💥 Network request failed: \(error)")
             throw error
         }
     }
@@ -67,9 +67,9 @@ public final class NetSwiftly {
 
 @available(iOS 13.0.0, *)
 extension NetSwiftly {
-    private func log(_ message: String, emoji: String) {
+    private func log(_ message: String) {
         if debugEnabled {
-            print("\(emoji) \(message)")
+            print(message)
         }
     }
 }

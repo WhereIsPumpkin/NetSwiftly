@@ -1,6 +1,6 @@
 //
-//  File.swift
-//  
+//  NetworkError.swift
+//
 //
 //  Created by Saba Gogrichiani on 29.02.24.
 //
@@ -12,8 +12,4 @@ public enum NetworkError: Error {
     case requestFailed
     case decodingError
     case serverMessage(String)
-}
-
-public struct APIErrorResponse: Decodable {
-    public let message: String
 }
