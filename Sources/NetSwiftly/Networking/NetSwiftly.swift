@@ -24,21 +24,25 @@ public final class NetSwiftly {
         request: URLRequest,
         responseType: T.Type
     ) async throws -> T {
-        log("Starting request to \(request.url?.absoluteString ?? "unknown URL")", emoji: "🚀")
-        
-        guard let url = request.url else {
-            log("Bad URL: \(request)", emoji: "❌")
-            throw NetworkError.badURL
-        }
+        log("🚀 Starting request to \(request.url?.absoluteString ?? "unknown URL")", emoji: "🚀")
         
         do {
             let (data, response) = try await URLSession.shared.data(for: request)
             
+            if let httpResponse = response as? HTTPURLResponse {
+                log("📥 Received response with status code: \(httpResponse.statusCode)", emoji: "ℹ️")
+            }
+            
+            if let rawJSONString = String(data: data, encoding: .utf8) {
+                log("📄 Received JSON: \(rawJSONString)", emoji: "📄")
+            }
+            
             guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode >= 200 && httpResponse.statusCode < 300 else {
-                log("Server responded with error status code: \(response)", emoji: "⚠️")
                 if let decodedError = try? JSONDecoder().decode(APIErrorResponse.self, from: data) {
+                    log("⚠️ Server error message: \(decodedError.message)", emoji: "⚠️")
                     throw NetworkError.serverMessage(decodedError.message)
                 } else {
+                    log("❌ Failed to decode server error message.", emoji: "❌")
                     throw NetworkError.requestFailed
                 }
             }
@@ -47,14 +51,14 @@ public final class NetSwiftly {
                 let decoder = JSONDecoder()
                 decoder.dateDecodingStrategy = dateDecodingStrategy
                 let decodedData = try decoder.decode(T.self, from: data)
-                log("Successfully decoded response of type \(T.self)", emoji: "✅")
+                log("✅ Successfully decoded response of type \(T.self)", emoji: "✅")
                 return decodedData
             } catch {
-                log("Decoding error for request to \(url)", emoji: "🐛")
+                log("🐛 Decoding error for request to \(request.url?.absoluteString ?? "unknown URL"): \(error)", emoji: "🐛")
                 throw NetworkError.decodingError
             }
         } catch {
-            log("Network request failed: \(error)", emoji: "💥")
+            log("💥 Network request failed: \(error)", emoji: "💥")
             throw error
         }
     }
