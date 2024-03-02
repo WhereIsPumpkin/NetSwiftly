@@ -20,73 +20,33 @@ public final class NetSwiftly {
         self.dateDecodingStrategy = strategy
     }
     
-    public func performRequest<T: Decodable>(with urlRequest: URLRequest, decodeTo type: T.Type) async throws -> ApiResponse<T> {
-        log("🌐 Making request to: \(urlRequest.url?.absoluteString ?? "Unknown URL")")
+    public func performRequest<T: Decodable>(
+        request: URLRequest,
+        responseType: T.Type
+    ) async throws -> T {
+        guard let url = request.url else {
+            throw NetworkError.badURL
+        }
+        
+        let (data, response) = try await URLSession.shared.data(for: request)
+        
+        guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode >= 200 && httpResponse.statusCode < 300 else {
+            if let decodedError = try? JSONDecoder().decode(APIErrorResponse.self, from: data) {
+                throw NetworkError.serverMessage(decodedError.message)
+            } else {
+                throw NetworkError.requestFailed
+            }
+        }
         
         do {
-            let (data, response) = try await urlSession.data(for: urlRequest)
-            
-            guard let httpResponse = response as? HTTPURLResponse else {
-                throw NetSwiftlyError.unknownError
-            }
-            
-            log("🚦 HTTP Status Code: \(httpResponse.statusCode)")
-            guard 200...299 ~= httpResponse.statusCode else {
-                log("❌ Error: Bad Server Response (\(httpResponse.statusCode))")
-                throw NetSwiftlyError.badServerResponse(httpResponse.statusCode)
-            }
-            
-            let decoder = JSONDecoder()
-            decoder.dateDecodingStrategy = self.dateDecodingStrategy
-            
-            do {
-                let decodedData = try decoder.decode(ApiResponse<T>.self, from: data)
-                log("✅ Successfully decoded \(T.self)")
-                return decodedData
-            } catch {
-                log("❌ Decoding error: \(error)")
-                throw NetSwiftlyError.decodingError(error)
-            }
+            let decodedData = try JSONDecoder().decode(T.self, from: data)
+            return decodedData
         } catch {
-            log("❌ Network error: \(error)")
-            throw NetSwiftlyError.networkError(error)
+            throw NetworkError.decodingError
         }
     }
     
-    public func performRequest(with urlRequest: URLRequest) async throws -> SimpleResponse {
-        log("🌐 Making request to: \(urlRequest.url?.absoluteString ?? "Unknown URL")")
-        
-        do {
-            let (data, response) = try await urlSession.data(for: urlRequest)
-            
-            guard let httpResponse = response as? HTTPURLResponse else {
-                throw NetSwiftlyError.unknownError
-            }
-            
-            log("🚦 HTTP Status Code: \(httpResponse.statusCode)")
-            guard 200...299 ~= httpResponse.statusCode else {
-                log("❌ Error: Bad Server Response (\(httpResponse.statusCode))")
-                throw NetSwiftlyError.badServerResponse(httpResponse.statusCode)
-            }
-            
-            log("✅ Request successful with status code \(httpResponse.statusCode)")
-            
-            let decoder = JSONDecoder()
-            decoder.dateDecodingStrategy = self.dateDecodingStrategy
-            
-            do {
-                let decodedData = try decoder.decode(SimpleResponse.self, from: data)
-                log("✅ Successfully decoded \(SimpleResponse.self)")
-                return decodedData
-            } catch {
-                log("❌ Decoding error: \(error)")
-                throw NetSwiftlyError.decodingError(error)
-            }
-        } catch {
-            log("❌ Network error: \(error)")
-            throw NetSwiftlyError.networkError(error)
-        }
-    }
+    
 }
 
 @available(iOS 13.0.0, *)

@@ -7,9 +7,13 @@
 
 import Foundation
 
-public enum NetSwiftlyError: Error {
-    case badServerResponse(Int)
-    case decodingError(Error)
-    case networkError(Error)
-    case unknownError
+public enum NetworkError: Error {
+    case badURL
+    case requestFailed
+    case decodingError
+    case serverMessage(String)
+}
+
+public struct APIErrorResponse: Decodable {
+    public let message: String
 }
