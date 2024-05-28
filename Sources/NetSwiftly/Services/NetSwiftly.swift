@@ -2,75 +2,67 @@
 // https://docs.swift.org/swift-book
 
 import Foundation
+import os.log
 
-@available(iOS 13.0.0, *)
+@available(iOS 14.0.0, *)
 public final class NetSwiftly {
     
     public static let shared = NetSwiftly()
     
     public var debugEnabled: Bool = false
+    public var logger: Logger = Logger(subsystem: "com.default.networking", category: "Networking")
+
     private let urlSession: URLSession
-    private var dateDecodingStrategy: JSONDecoder.DateDecodingStrategy = .iso8601
     
-    private init(urlSession: URLSession = .shared) {
+    public init(urlSession: URLSession = .shared) {
         self.urlSession = urlSession
     }
-    
-    public func setDateDecodingStrategy(_ strategy: JSONDecoder.DateDecodingStrategy) {
-        self.dateDecodingStrategy = strategy
+
+    public func setupLogger(subsystem: String, category: String) {
+        self.logger = Logger(subsystem: subsystem, category: category)
     }
-    
+
     public func performRequest<T: Decodable>(
         request: URLRequest,
         responseType: T.Type
     ) async throws -> T {
-        log("🚀 Starting request to \(request.url?.absoluteString ?? "unknown URL")")
+        logger.debug(" Starting request to \(request.url?.absoluteString ?? "unknown URL", privacy: .sensitive)")
         
         do {
-            let (data, response) = try await URLSession.shared.data(for: request)
+            let (data, response) = try await urlSession.data(for: request)
             
             if let httpResponse = response as? HTTPURLResponse {
-                log("📥 Received response with status code: \(httpResponse.statusCode)")
+                logger.info(" Received response with status code: \(httpResponse.statusCode)")
             }
             
             if let rawJSONObject = try? JSONSerialization.jsonObject(with: data),
-                let prettyPrintedData = try? JSONSerialization.data(withJSONObject: rawJSONObject, options: .prettyPrinted) {
-                log("📄 Received JSON: \(rawJSONObject)")
+               let prettyPrintedData = try? JSONSerialization.data(withJSONObject: rawJSONObject, options: .prettyPrinted),
+               let jsonString = String(data: prettyPrintedData, encoding: .utf8) {
+                logger.debug(" Received JSON: \(jsonString, privacy: .sensitive)")
             }
             
             guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode >= 200 && httpResponse.statusCode < 300 else {
                 if let decodedError = try? JSONDecoder().decode(APIErrorResponse.self, from: data) {
-                    log("⚠️ Server error message: \(decodedError.message)")
+                    logger.error(" Server error message: \(decodedError.message, privacy: .sensitive)")
                     throw NetworkError.serverMessage(decodedError.message)
                 } else {
-                    log("❌ Failed to decode server error message.")
+                    logger.error(" Failed to decode server error message.")
                     throw NetworkError.requestFailed
                 }
             }
             
             do {
                 let decoder = JSONDecoder()
-                decoder.dateDecodingStrategy = dateDecodingStrategy
                 let decodedData = try decoder.decode(T.self, from: data)
-                log("✅ Successfully decoded response of type \(T.self)")
+                logger.debug(" Successfully decoded response of type \(T.self)")
                 return decodedData
             } catch {
-                log("🐛 Decoding error for request to \(request.url?.absoluteString ?? "unknown URL"): \(error)")
+                logger.error(" Decoding error for request to \(request.url?.absoluteString ?? "unknown URL", privacy: .sensitive): \(error.localizedDescription, privacy: .public)")
                 throw NetworkError.decodingError
             }
         } catch {
-            log("💥 Network request failed: \(error)")
+            logger.error(" Network request failed: \(error.localizedDescription, privacy: .public)")
             throw error
-        }
-    }
-    
-}
-
-@available(iOS 13.0.0, *)
-extension NetSwiftly {
-    private func log(_ message: String) {
-        if debugEnabled {
-            print(message)
         }
     }
 }
