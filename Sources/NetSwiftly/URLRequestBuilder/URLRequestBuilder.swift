@@ -48,11 +48,14 @@ public enum ContentType: String {
 
 public class URLRequestBuilder {
     private let baseURL: URL
-    
-    public init(baseURL: URL) {
-        self.baseURL = baseURL
+
+    public init?(baseURL: String) {
+        guard let url = URL(string: baseURL) else {
+            return nil
+        }
+        self.baseURL = url
     }
-    
+
     /// Builds a URL request with the given path, HTTP method, and content type.
     /// - Parameters:
     ///   - path: The endpoint path to be appended to the base URL.
@@ -65,29 +68,29 @@ public class URLRequestBuilder {
         request.setValue(contentType.rawValue, forHTTPHeaderField: "Content-Type")
         return request
     }
-    
+
     // MARK: - Public Methods for Creating Requests
-    
+
     /// Creates a GET request for the specified path.
     /// - Parameter path: The endpoint path for the HTTP method request.
     /// - Returns: A configured URLRequest instance for a  HTTP method request.
-    
+
     public func get(_ path: String) -> URLRequest {
         return buildRequest(path: path, method: .get)
     }
-    
+
     public func post(_ path: String) -> URLRequest {
         return buildRequest(path: path, method: .post)
     }
-    
+
     public func put(_ path: String) -> URLRequest {
         return buildRequest(path: path, method: .put)
     }
-    
+
     public func patch(_ path: String) -> URLRequest {
         return buildRequest(path: path, method: .patch)
     }
-    
+
     public func delete(_ path: String) -> URLRequest {
         return buildRequest(path: path, method: .delete)
     }
@@ -102,27 +105,27 @@ public extension URLRequest {
     /// - Throws: An error if encoding fails.
     mutating func setJSONBody<T: Encodable>(_ body: T, encoder: JSONEncoder = JSONEncoder()) throws {
         encoder.dateEncodingStrategy = .iso8601
-        self.httpBody = try encoder.encode(body)
+        httpBody = try encoder.encode(body)
     }
-    
+
     /// Adds URL query items to the request.
     /// - Parameter items: A dictionary of query item names and values to add to the request.
     mutating func addQueryItems(_ items: [String: String]) {
-        guard var urlComponents = URLComponents(url: self.url!, resolvingAgainstBaseURL: false) else { return }
-        
+        guard var urlComponents = URLComponents(url: url!, resolvingAgainstBaseURL: false) else { return }
+
         let queryItems = items.map { URLQueryItem(name: $0.key, value: $0.value) }
         if urlComponents.queryItems != nil {
             urlComponents.queryItems!.append(contentsOf: queryItems)
         } else {
             urlComponents.queryItems = queryItems
         }
-        
-        self.url = urlComponents.url
+
+        url = urlComponents.url
     }
-    
+
     /// Sets a bearer token for the Authorization header of the request.
     /// - Parameter token: The bearer token to set.
     mutating func setBearerToken(_ token: String) {
-        self.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
     }
 }
