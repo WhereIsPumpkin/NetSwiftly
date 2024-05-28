@@ -26,27 +26,27 @@ public final class NetSwiftly {
         request: URLRequest,
         responseType: T.Type
     ) async throws -> T {
-        logger.debug(" Starting request to \(request.url?.absoluteString ?? "unknown URL", privacy: .sensitive)")
+        logger.debug("🚀 Starting request to \(request.url?.absoluteString ?? "unknown URL", privacy: .sensitive)")
         
         do {
             let (data, response) = try await urlSession.data(for: request)
             
             if let httpResponse = response as? HTTPURLResponse {
-                logger.info(" Received response with status code: \(httpResponse.statusCode)")
+                logger.info("📥 Received response with status code: \(httpResponse.statusCode)")
             }
             
             if let rawJSONObject = try? JSONSerialization.jsonObject(with: data),
                let prettyPrintedData = try? JSONSerialization.data(withJSONObject: rawJSONObject, options: .prettyPrinted),
                let jsonString = String(data: prettyPrintedData, encoding: .utf8) {
-                logger.debug(" Received JSON: \(jsonString, privacy: .sensitive)")
+                logger.debug("📄 Received JSON: \(jsonString, privacy: .sensitive)")
             }
             
             guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode >= 200 && httpResponse.statusCode < 300 else {
                 if let decodedError = try? JSONDecoder().decode(APIErrorResponse.self, from: data) {
-                    logger.error(" Server error message: \(decodedError.message, privacy: .sensitive)")
+                    logger.error("⚠️ Server error message: \(decodedError.message, privacy: .sensitive)")
                     throw NetworkError.serverMessage(decodedError.message)
                 } else {
-                    logger.error(" Failed to decode server error message.")
+                    logger.error("❌ Failed to decode server error message.")
                     throw NetworkError.requestFailed
                 }
             }
@@ -54,14 +54,14 @@ public final class NetSwiftly {
             do {
                 let decoder = JSONDecoder()
                 let decodedData = try decoder.decode(T.self, from: data)
-                logger.debug(" Successfully decoded response of type \(T.self)")
+                logger.debug("✅ Successfully decoded response of type \(T.self)")
                 return decodedData
             } catch {
-                logger.error(" Decoding error for request to \(request.url?.absoluteString ?? "unknown URL", privacy: .sensitive): \(error.localizedDescription, privacy: .public)")
+                logger.error("🐛 Decoding error for request to \(request.url?.absoluteString ?? "unknown URL", privacy: .sensitive): \(error.localizedDescription, privacy: .public)")
                 throw NetworkError.decodingError
             }
         } catch {
-            logger.error(" Network request failed: \(error.localizedDescription, privacy: .public)")
+            logger.error("💥 Network request failed: \(error.localizedDescription, privacy: .public)")
             throw error
         }
     }
