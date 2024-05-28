@@ -33,8 +33,9 @@ public final class NetSwiftly {
                 log("📥 Received response with status code: \(httpResponse.statusCode)")
             }
             
-            if let rawJSONString = String(data: data, encoding: .utf8) {
-                log("📄 Received JSON: \(rawJSONString)")
+            if let rawJSONObject = try? JSONSerialization.jsonObject(with: data),
+                let prettyPrintedData = try? JSONSerialization.data(withJSONObject: rawJSONObject, options: .prettyPrinted) {
+                log("📄 Received JSON: \(rawJSONObject)")
             }
             
             guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode >= 200 && httpResponse.statusCode < 300 else {
